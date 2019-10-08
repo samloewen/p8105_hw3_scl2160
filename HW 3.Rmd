@@ -1,0 +1,64 @@
+---
+title: "HW 3"
+author: "Sam Loewen"
+date: "10/7/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(p8105.datasets)
+data("instacart")
+```
+
+The dataset `instacart` has `r nrow(instacart)` observations, with `r ncol(instacart)` variables. The data tracks products and thier corresponding order, providing information like `order_number`, `product_name`, and its corresponding `aisle`. We can learn things like the preportion of products that were reordered (`r mean(pull(instacart, reordered))`) or the average number of days since prior order (`r mean(pull(instacart, days_since_prior_order))`).
+
+
+*   How many aisles are there, and which aisles are the most items ordered from?
+
+```{r}
+instacart %>% 
+group_by (aisle_id) %>% 
+  summarize (n_obs = n()) %>% 
+arrange(desc(n_obs))
+```
+There are 134 aisles, and aisles 83, 24, and 123 are the most ordered from.
+
+*   Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+
+```{r}
+instacart %>%
+  group_by (aisle_id) %>% 
+  summarize (n_obs = n()) %>% 
+  filter(n_obs > 10000) %>% 
+  arrange(aisle_id) %>% 
+    ggplot(aes(x = aisle_id, y = n_obs, color=n_obs)) + 
+    geom_point() +
+    labs(title = "Number of items ordered per aisle", 
+    x = "Aisle Number", 
+    y = "NUmber items ordered")
+```
+
+*   Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+
+baking ingredients = 17
+dog food care = 40
+packaged vegetables fruits = 123
+
+```{r}
+instacart %>% 
+group_by (aisle, product_id) %>% 
+  summarize (n_obs = n()) %>% 
+filter (aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>% 
+top_n(3, n_obs) %>% 
+knitr::kable()
+
+```
+
+
+*   Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
+
+

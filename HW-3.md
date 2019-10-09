@@ -3,6 +3,8 @@ HW 3
 Sam Loewen
 10/7/2019
 
+## Problem 1
+
 The dataset `instacart` has 1384617 observations, with 15 variables. The
 data tracks products and thier corresponding order, providing
 information like `order_number`, `product_name`, and its corresponding
@@ -66,8 +68,7 @@ instacart %>%
     vegetables fruits”. Include the number of times each item is ordered
     in your table.
 
-baking ingredients = 17 dog food care = 40 packaged vegetables fruits =
-123
+<!-- end list -->
 
 ``` r
 instacart %>% 
@@ -93,3 +94,89 @@ knitr::kable()
   - Make a table showing the mean hour of the day at which Pink Lady
     Apples and Coffee Ice Cream are ordered on each day of the week;
     format this table for human readers (i.e. produce a 2 x 7 table).
+
+<!-- end list -->
+
+``` r
+instacart %>% 
+group_by (product_name, order_dow) %>%
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+filter (product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>%
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour) %>% 
+knitr::kable()  
+```
+
+| product\_name    |        0 |        1 |        2 |        3 |        4 |        5 |        6 |
+| :--------------- | -------: | -------: | -------: | -------: | -------: | -------: | -------: |
+| Coffee Ice Cream | 13.77419 | 14.31579 | 15.38095 | 15.31818 | 15.21739 | 12.26316 | 13.83333 |
+| Pink Lady Apples | 13.44118 | 11.36000 | 11.70213 | 14.25000 | 11.55172 | 12.78431 | 11.93750 |
+
+## Problem 2
+
+First, do some data cleaning:
+
+  - format the data to use appropriate variable names;
+  - focus on the “Overall Health” topic
+  - include only responses from “Excellent” to “Poor”
+  - organize responses as a factor taking levels ordered from “Poor” to
+    “Excellent”
+
+<!-- end list -->
+
+``` r
+brfss_smart2010_1 =
+  brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter (topic == "Overall Health",
+          response == "Excellent" | 
+          response == "Very good" | 
+          response == "Good" | 
+          response == "Fair" |
+          response == "Poor") %>% 
+  mutate(response = factor(response, labels = c("Poor", "Fair", "Good", "Very Good", "Excellent")))
+```
+
+Using this dataset, do or answer the following (commenting on the
+results of each):
+
+  - In 2002, which states were observed at 7 or more locations? What
+    about in 2010? Construct a dataset that is limited to Excellent
+    responses, and contains, year, state, and a variable that averages
+    the data\_value across locations within a state.
+
+<!-- end list -->
+
+``` r
+brfss_smart2010_2 = 
+brfss_smart2010_1 %>% 
+  group_by(year, locationabbr, response) %>% 
+  summarize (n_loc = n_distinct(locationdesc),
+             mean_dv = mean(data_value, na.rm = TRUE)) %>% 
+filter(year == 2002 | year == 2010,
+       n_loc >= 7,
+       response == "Excellent") %>% 
+select (-response, -n_loc)
+```
+
+  - Make a “spaghetti” plot of this average value over time within a
+    state (that is, make a plot showing a line for each state across
+    years – the geom\_line geometry and group aesthetic will help).
+
+<!-- end list -->
+
+``` r
+brfss_smart2010_1 %>% 
+  group_by(year, locationabbr, response) %>% 
+  summarize (n_loc = n_distinct(locationdesc),
+             mean_dv = mean(data_value, na.rm = TRUE)) %>% 
+  filter(n_loc >= 7, response == "Excellent") %>% 
+  ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + 
+  geom_point() + geom_line() +
+  labs(title = "Mean data value over time, by state", 
+    x = "year", 
+    y = "data value")
+```
+
+![](HW-3_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->

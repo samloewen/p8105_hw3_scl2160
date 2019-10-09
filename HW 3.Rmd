@@ -10,8 +10,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(p8105.datasets)
+library(knitr)
 data("instacart")
+data("brfss_smart2010")
+
 ```
+## Problem 1
 
 The dataset `instacart` has `r nrow(instacart)` observations, with `r ncol(instacart)` variables. The data tracks products and thier corresponding order, providing information like `order_number`, `product_name`, and its corresponding `aisle`. We can learn things like the preportion of products that were reordered (`r mean(pull(instacart, reordered))`) or the average number of days since prior order (`r mean(pull(instacart, days_since_prior_order))`).
 
@@ -43,10 +47,6 @@ instacart %>%
 
 *   Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 
-baking ingredients = 17
-dog food care = 40
-packaged vegetables fruits = 123
-
 ```{r}
 instacart %>% 
 group_by (aisle, product_id) %>% 
@@ -54,11 +54,78 @@ group_by (aisle, product_id) %>%
 filter (aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>% 
 top_n(3, n_obs) %>% 
 knitr::kable()
-
 ```
 
 
 *   Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
 
 
+```{r}
+instacart %>% 
+group_by (product_name, order_dow) %>%
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+filter (product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>%
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour) %>% 
+knitr::kable()  
+```
+
+
+## Problem 2
+
+First, do some data cleaning: 
+
+*   format the data to use appropriate variable names;
+*   focus on the “Overall Health” topic
+*   include only responses from “Excellent” to “Poor”
+*   organize responses as a factor taking levels ordered from “Poor” to “Excellent”
+
+```{r}
+brfss_smart2010_1 =
+  brfss_smart2010 %>% 
+  janitor::clean_names() %>% 
+  filter (topic == "Overall Health",
+          response == "Excellent" | 
+          response == "Very good" | 
+          response == "Good" | 
+          response == "Fair" |
+          response == "Poor") %>% 
+  mutate(response = factor(response, labels = c("Poor", "Fair", "Good", "Very Good", "Excellent")))
+
+```
+
+Using this dataset, do or answer the following (commenting on the results of each):
+
+*   In 2002, which states were observed at 7 or more locations? What about in 2010?
+Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state.
+
+
+```{r}
+brfss_smart2010_2 = 
+brfss_smart2010_1 %>% 
+  group_by(year, locationabbr, response) %>% 
+  summarize (n_loc = n_distinct(locationdesc),
+             mean_dv = mean(data_value, na.rm = TRUE)) %>% 
+filter(year == 2002 | year == 2010,
+       n_loc >= 7,
+       response == "Excellent") %>% 
+select (-response, -n_loc)
+```
+
+
+*   Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+
+```{r}
+brfss_smart2010_1 %>% 
+  group_by(year, locationabbr, response) %>% 
+  summarize (n_loc = n_distinct(locationdesc),
+             mean_dv = mean(data_value, na.rm = TRUE)) %>% 
+  filter(n_loc >= 7, response == "Excellent") %>% 
+  ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + 
+  geom_point() + geom_line() +
+  labs(title = "Mean data value over time, by state", 
+    x = "year", 
+    y = "data value")
+```
 

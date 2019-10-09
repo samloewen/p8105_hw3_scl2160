@@ -129,3 +129,24 @@ brfss_smart2010_1 %>%
     y = "data value")
 ```
 
+
+*   Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+
+
+```{r}
+brfss_smart2010_1 %>% 
+  filter(locationabbr == "NY", 
+         year == 2006 | year == 2010) %>% 
+  select (year, locationabbr, locationdesc, response, data_value) %>% 
+ggplot(aes(x = response, y = data_value)) + 
+  geom_boxplot() + facet_grid(. ~ year)  +
+  labs(title = "Distribution of data values by repsonse level, NY", 
+    x = "response", 
+    y = "data value")
+
+```
+
+
+
+
+

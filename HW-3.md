@@ -180,3 +180,23 @@ brfss_smart2010_1 %>%
 ```
 
 ![](HW-3_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+  - Make a two-panel plot showing, for the years 2006, and 2010,
+    distribution of data\_value for responses (“Poor” to “Excellent”)
+    among locations in NY State.
+
+<!-- end list -->
+
+``` r
+brfss_smart2010_1 %>% 
+  filter(locationabbr == "NY", 
+         year == 2006 | year == 2010) %>% 
+  select (year, locationabbr, locationdesc, response, data_value) %>% 
+ggplot(aes(x = response, y = data_value)) + 
+  geom_boxplot() + facet_grid(. ~ year)  +
+  labs(title = "Distribution of data values by repsonse level, NY", 
+    x = "response", 
+    y = "data value")
+```
+
+![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->

@@ -147,6 +147,54 @@ ggplot(aes(x = response, y = data_value)) +
 ```
 
 
+## Problem 3
+
+variables activity.* are the activity counts for each minute of a 24-hour day starting at midnight.
+
+*   Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
+
+```{r}
+accel = 
+  read_csv("./data/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(day = factor(day, labels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
+         weekend = as.numeric(if_else(day == "Saturday" | day == "Sunday", "1", "0"))) %>% 
+  select (week, day_id, day, weekend, everything()) %>% 
+arrange (week, day)
+```
+
+The dataset `accel` has `r nrow(accel)` observations, with `r ncol(accel)` variables. The data tracks one man's activity every day for 5 weeks, reporting activity every minute. A unit of activity is captued every minute and is represented in our data set with varaibles `acitvity_1` through `activity_1440`.
 
 
+*   Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 
+```{r}
+accel %>% 
+  group_by(day_id) %>% 
+  mutate (daily_tot = sum(activity_1 : activity_1440)) %>% 
+  select (week, day_id, day, weekend, daily_tot, everything())
+#sums not right.
+
+accel %>% 
+  group_by(day_id) %>% 
+  mutate (daily_tot = sum(activity_1:activity_1440)) %>%  
+  ggplot(aes(x=day_id, y=daily_tot)) + 
+  geom_point()
+```  
+
+
+*   Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
+```{r}
+accel %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    values_to = "activity_unit") %>% 
+ggplot(aes(x=day_id, y=activity_unit, group = minute, color = day)) + 
+  geom_point() + geom_line() +
+  labs(title = "Activity over time", 
+    x = "day", 
+    y = "activity unit")
+```
+ 

@@ -200,3 +200,138 @@ ggplot(aes(x = response, y = data_value)) +
 ```
 
 ![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+## Problem 3
+
+variables activity.\* are the activity counts for each minute of a
+24-hour day starting at midnight.
+
+  - Load, tidy, and otherwise wrangle the data. Your final dataset
+    should include all originally observed variables and values; have
+    useful variable names; include a weekday vs weekend variable; and
+    encode data with reasonable variable classes. Describe the resulting
+    dataset (e.g. what variables exist, how many observations, etc).
+
+<!-- end list -->
+
+``` r
+accel = 
+  read_csv("./data/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(day = factor(day, labels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
+         weekend = as.numeric(if_else(day == "Saturday" | day == "Sunday", "1", "0"))) %>% 
+  select (week, day_id, day, weekend, everything()) %>% 
+arrange (week, day)
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   .default = col_double(),
+    ##   day = col_character()
+    ## )
+
+    ## See spec(...) for full column specifications.
+
+The dataset `accel` has 35 observations, with 1444 variables. The data
+tracks one man’s activity every day for 5 weeks, reporting activity
+every minute. A unit of activity is captued every minute and is
+represented in our data set with varaibles `acitvity_1` through
+`activity_1440`.
+
+  - Traditional analyses of accelerometer data focus on the total
+    activity over the day. Using your tidied dataset, aggregate accross
+    minutes to create a total activity variable for each day, and create
+    a table showing these totals. Are any trends apparent?
+
+<!-- end list -->
+
+``` r
+accel %>% 
+  group_by(day_id) %>% 
+  mutate (daily_tot = sum(activity_1 : activity_1440)) %>% 
+  select (week, day_id, day, weekend, daily_tot, everything())
+```
+
+    ## # A tibble: 35 x 1,445
+    ## # Groups:   day_id [35]
+    ##     week day_id day   weekend daily_tot activity_1 activity_2 activity_3
+    ##    <dbl>  <dbl> <fct>   <dbl>     <dbl>      <dbl>      <dbl>      <dbl>
+    ##  1     1      1 Mond~       0     3949.       88.4       82.2       64.4
+    ##  2     1      2 Tues~       0     2278         1          1          1  
+    ##  3     1      3 Wedn~       0        1         1          1          1  
+    ##  4     1      4 Thur~       0    46665         1          1          1  
+    ##  5     1      5 Frid~       0      941.       47.4       48.8       46.9
+    ##  6     1      6 Satu~       1     3166.       64.8       59.5       73.7
+    ##  7     1      7 Sund~       1     1126.       71.1      103.        68.5
+    ##  8     2      8 Mond~       0   228150       675        542       1010  
+    ##  9     2      9 Tues~       0    42486       291        335        393  
+    ## 10     2     10 Wedn~       0     1849        64         11          1  
+    ## # ... with 25 more rows, and 1,437 more variables: activity_4 <dbl>,
+    ## #   activity_5 <dbl>, activity_6 <dbl>, activity_7 <dbl>,
+    ## #   activity_8 <dbl>, activity_9 <dbl>, activity_10 <dbl>,
+    ## #   activity_11 <dbl>, activity_12 <dbl>, activity_13 <dbl>,
+    ## #   activity_14 <dbl>, activity_15 <dbl>, activity_16 <dbl>,
+    ## #   activity_17 <dbl>, activity_18 <dbl>, activity_19 <dbl>,
+    ## #   activity_20 <dbl>, activity_21 <dbl>, activity_22 <dbl>,
+    ## #   activity_23 <dbl>, activity_24 <dbl>, activity_25 <dbl>,
+    ## #   activity_26 <dbl>, activity_27 <dbl>, activity_28 <dbl>,
+    ## #   activity_29 <dbl>, activity_30 <dbl>, activity_31 <dbl>,
+    ## #   activity_32 <dbl>, activity_33 <dbl>, activity_34 <dbl>,
+    ## #   activity_35 <dbl>, activity_36 <dbl>, activity_37 <dbl>,
+    ## #   activity_38 <dbl>, activity_39 <dbl>, activity_40 <dbl>,
+    ## #   activity_41 <dbl>, activity_42 <dbl>, activity_43 <dbl>,
+    ## #   activity_44 <dbl>, activity_45 <dbl>, activity_46 <dbl>,
+    ## #   activity_47 <dbl>, activity_48 <dbl>, activity_49 <dbl>,
+    ## #   activity_50 <dbl>, activity_51 <dbl>, activity_52 <dbl>,
+    ## #   activity_53 <dbl>, activity_54 <dbl>, activity_55 <dbl>,
+    ## #   activity_56 <dbl>, activity_57 <dbl>, activity_58 <dbl>,
+    ## #   activity_59 <dbl>, activity_60 <dbl>, activity_61 <dbl>,
+    ## #   activity_62 <dbl>, activity_63 <dbl>, activity_64 <dbl>,
+    ## #   activity_65 <dbl>, activity_66 <dbl>, activity_67 <dbl>,
+    ## #   activity_68 <dbl>, activity_69 <dbl>, activity_70 <dbl>,
+    ## #   activity_71 <dbl>, activity_72 <dbl>, activity_73 <dbl>,
+    ## #   activity_74 <dbl>, activity_75 <dbl>, activity_76 <dbl>,
+    ## #   activity_77 <dbl>, activity_78 <dbl>, activity_79 <dbl>,
+    ## #   activity_80 <dbl>, activity_81 <dbl>, activity_82 <dbl>,
+    ## #   activity_83 <dbl>, activity_84 <dbl>, activity_85 <dbl>,
+    ## #   activity_86 <dbl>, activity_87 <dbl>, activity_88 <dbl>,
+    ## #   activity_89 <dbl>, activity_90 <dbl>, activity_91 <dbl>,
+    ## #   activity_92 <dbl>, activity_93 <dbl>, activity_94 <dbl>,
+    ## #   activity_95 <dbl>, activity_96 <dbl>, activity_97 <dbl>,
+    ## #   activity_98 <dbl>, activity_99 <dbl>, activity_100 <dbl>,
+    ## #   activity_101 <dbl>, activity_102 <dbl>, activity_103 <dbl>, ...
+
+``` r
+#sums not right.
+
+accel %>% 
+  group_by(day_id) %>% 
+  mutate (daily_tot = sum(activity_1:activity_1440)) %>%  
+  ggplot(aes(x=day_id, y=daily_tot)) + 
+  geom_point()
+```
+
+![](HW-3_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+  - Accelerometer data allows the inspection activity over the course of
+    the day. Make a single-panel plot that shows the 24-hour activity
+    time courses for each day and use color to indicate day of the week.
+    Describe in words any patterns or conclusions you can make based on
+    this graph.
+
+<!-- end list -->
+
+``` r
+accel %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    values_to = "activity_unit") %>% 
+ggplot(aes(x=day_id, y=activity_unit, group = minute, color = day)) + 
+  geom_point() + geom_line() +
+  labs(title = "Activity over time", 
+    x = "day", 
+    y = "activity unit")
+```
+
+![](HW-3_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->

@@ -49,7 +49,7 @@ instacart %>%
 
 ```{r}
 instacart %>% 
-group_by (aisle, product_id) %>% 
+group_by (aisle, product_name) %>% 
   summarize (n_obs = n()) %>% 
 filter (aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>% 
 top_n(3, n_obs) %>% 
@@ -92,64 +92,65 @@ brfss_smart2010_1 =
           response == "Fair" |
           response == "Poor") %>% 
   mutate(response = factor(response, labels = c("Poor", "Fair", "Good", "Very Good", "Excellent")))
-
 ```
 
 Using this dataset, do or answer the following (commenting on the results of each):
 
 *   In 2002, which states were observed at 7 or more locations? What about in 2010?
-Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state.
-
 
 ```{r}
-brfss_smart2010_2 = 
 brfss_smart2010_1 %>% 
-  group_by(year, locationabbr, response) %>% 
+  group_by(year, locationabbr) %>% 
   summarize (n_loc = n_distinct(locationdesc),
              mean_dv = mean(data_value, na.rm = TRUE)) %>% 
 filter(year == 2002 | year == 2010,
-       n_loc >= 7,
-       response == "Excellent") %>% 
-select (-response, -n_loc)
+       n_loc >= 7) %>% 
+select (-n_loc) %>% 
+arrange(year, locationabbr)
+
 ```
+In 2002, CT, FL, MA, NC, NJ, and PA all were observed in 7 or more locations. In 2010, CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, and WA were observed in 7 or more locations.
 
-
-*   Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+*   Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
 
 ```{r}
+brfss_smart2010_2 =
 brfss_smart2010_1 %>% 
   group_by(year, locationabbr, response) %>% 
-  summarize (n_loc = n_distinct(locationdesc),
-             mean_dv = mean(data_value, na.rm = TRUE)) %>% 
-  filter(n_loc >= 7, response == "Excellent") %>% 
-  ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + 
-  geom_point() + geom_line() +
+  summarize (mean_dv = mean(data_value, na.rm = TRUE)) %>% 
+filter(response == "Excellent") %>% 
+select (-response) %>% 
+arrange(year, locationabbr)
+
+brfss_smart2010_2
+```
+
+```{r}
+brfss_smart2010_2 %>% 
+  ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + geom_point() + geom_line() +
   labs(title = "Mean data value over time, by state", 
     x = "year", 
     y = "data value")
 ```
 
+The mean data values across states range from `r min(pull(brfss_smart2010_2,mean_dv))` to `r max(pull(brfss_smart2010_2,mean_dv))`. The meadian values by year are: 2002: `r median(pull(filter(brfss_smart2010_2,year==2002),mean_dv))`, 2004: `r median(pull(filter(brfss_smart2010_2,year==2004),mean_dv))`, 2006: `r median(pull(filter(brfss_smart2010_2,year==2006),mean_dv))`, 2008: `r median(pull(filter(brfss_smart2010_2,year==2008),mean_dv))`, and 2010: `r median(pull(filter(brfss_smart2010_2,year==2010),mean_dv))`.
 
 *   Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
-
+Problem 3
 
 ```{r}
 brfss_smart2010_1 %>% 
   filter(locationabbr == "NY", 
          year == 2006 | year == 2010) %>% 
-  select (year, locationabbr, locationdesc, response, data_value) %>% 
 ggplot(aes(x = response, y = data_value)) + 
   geom_boxplot() + facet_grid(. ~ year)  +
   labs(title = "Distribution of data values by repsonse level, NY", 
     x = "response", 
     y = "data value")
-
 ```
-
+In 2006, the largest range of values within a category was in `Good`. The smallest distrubution was among `Very Good`, which also has the lowest data values. In 2010 the highest data values and the largest distributions of values was in the `Excellent` group. Again the smallest values and smallest distribution was in the `Very Good` group.
 
 ## Problem 3
-
-variables activity.* are the activity counts for each minute of a 24-hour day starting at midnight.
 
 *   Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
 
@@ -160,18 +161,17 @@ accel =
   mutate(day = factor(day, labels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
          weekend = as.numeric(if_else(day == "Saturday" | day == "Sunday", "1", "0"))) %>% 
   select (week, day_id, day, weekend, everything()) %>% 
-arrange (week, day)
+  arrange (week, day)
 ```
 
 The dataset `accel` has `r nrow(accel)` observations, with `r ncol(accel)` variables. The data tracks one man's activity every day for 5 weeks, reporting activity every minute. A unit of activity is captued every minute and is represented in our data set with varaibles `acitvity_1` through `activity_1440`.
 
-
 *   Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 
-```{r}
+
 accel %>% 
   group_by(day_id) %>% 
-  mutate (daily_tot = sum(activity_1 : activity_1440)) %>% 
+  mutate (daily_tot = aggregate(activity_1:activity_1440)) %>% 
   select (week, day_id, day, weekend, daily_tot, everything())
 #sums not right.
 
@@ -180,7 +180,6 @@ accel %>%
   mutate (daily_tot = sum(activity_1:activity_1440)) %>%  
   ggplot(aes(x=day_id, y=daily_tot)) + 
   geom_point()
-```  
 
 
 *   Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.

@@ -72,24 +72,24 @@ instacart %>%
 
 ``` r
 instacart %>% 
-group_by (aisle, product_id) %>% 
+group_by (aisle, product_name) %>% 
   summarize (n_obs = n()) %>% 
 filter (aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") %>% 
 top_n(3, n_obs) %>% 
 knitr::kable()
 ```
 
-| aisle                      | product\_id | n\_obs |
-| :------------------------- | ----------: | -----: |
-| baking ingredients         |       23405 |    387 |
-| baking ingredients         |       23537 |    499 |
-| baking ingredients         |       49533 |    336 |
-| dog food care              |         722 |     30 |
-| dog food care              |       17471 |     26 |
-| dog food care              |       23329 |     28 |
-| packaged vegetables fruits |       21903 |   9784 |
-| packaged vegetables fruits |       27966 |   5546 |
-| packaged vegetables fruits |       39275 |   4966 |
+| aisle                      | product\_name                                 | n\_obs |
+| :------------------------- | :-------------------------------------------- | -----: |
+| baking ingredients         | Cane Sugar                                    |    336 |
+| baking ingredients         | Light Brown Sugar                             |    499 |
+| baking ingredients         | Pure Baking Soda                              |    387 |
+| dog food care              | Organix Chicken & Brown Rice Recipe           |     28 |
+| dog food care              | Small Dog Biscuits                            |     26 |
+| dog food care              | Snack Sticks Chicken & Rice Recipe Dog Treats |     30 |
+| packaged vegetables fruits | Organic Baby Spinach                          |   9784 |
+| packaged vegetables fruits | Organic Blueberries                           |   4966 |
+| packaged vegetables fruits | Organic Raspberries                           |   5546 |
 
   - Make a table showing the mean hour of the day at which Pink Lady
     Apples and Coffee Ice Cream are ordered on each day of the week;
@@ -142,48 +142,104 @@ Using this dataset, do or answer the following (commenting on the
 results of each):
 
   - In 2002, which states were observed at 7 or more locations? What
-    about in 2010? Construct a dataset that is limited to Excellent
-    responses, and contains, year, state, and a variable that averages
-    the data\_value across locations within a state.
+    about in 2010?
 
 <!-- end list -->
 
 ``` r
-brfss_smart2010_2 = 
 brfss_smart2010_1 %>% 
-  group_by(year, locationabbr, response) %>% 
+  group_by(year, locationabbr) %>% 
   summarize (n_loc = n_distinct(locationdesc),
              mean_dv = mean(data_value, na.rm = TRUE)) %>% 
 filter(year == 2002 | year == 2010,
-       n_loc >= 7,
-       response == "Excellent") %>% 
-select (-response, -n_loc)
+       n_loc >= 7) %>% 
+select (-n_loc) %>% 
+arrange(year, locationabbr)
 ```
 
-  - Make a “spaghetti” plot of this average value over time within a
-    state (that is, make a plot showing a line for each state across
-    years – the geom\_line geometry and group aesthetic will help).
+    ## # A tibble: 20 x 3
+    ## # Groups:   year [2]
+    ##     year locationabbr mean_dv
+    ##    <int> <chr>          <dbl>
+    ##  1  2002 CT              20  
+    ##  2  2002 FL              20.0
+    ##  3  2002 MA              20.0
+    ##  4  2002 NC              20  
+    ##  5  2002 NJ              20.0
+    ##  6  2002 PA              20.0
+    ##  7  2010 CA              20.0
+    ##  8  2010 CO              20.0
+    ##  9  2010 FL              19.9
+    ## 10  2010 MA              20  
+    ## 11  2010 MD              20.0
+    ## 12  2010 NC              20.0
+    ## 13  2010 NE              20.0
+    ## 14  2010 NJ              20  
+    ## 15  2010 NY              20  
+    ## 16  2010 OH              20.0
+    ## 17  2010 PA              20.0
+    ## 18  2010 SC              19.6
+    ## 19  2010 TX              20.0
+    ## 20  2010 WA              20.0
+
+In 2002, CT, FL, MA, NC, NJ, and PA all were observed in 7 or more
+locations. In 2010, CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX,
+and WA were observed in 7 or more locations.
+
+  - Construct a dataset that is limited to Excellent responses, and
+    contains, year, state, and a variable that averages the data\_value
+    across locations within a state. Make a “spaghetti” plot of this
+    average value over time within a state (that is, make a plot showing
+    a line for each state across years – the geom\_line geometry and
+    group aesthetic will help).
 
 <!-- end list -->
 
 ``` r
+brfss_smart2010_2 =
 brfss_smart2010_1 %>% 
   group_by(year, locationabbr, response) %>% 
-  summarize (n_loc = n_distinct(locationdesc),
-             mean_dv = mean(data_value, na.rm = TRUE)) %>% 
-  filter(n_loc >= 7, response == "Excellent") %>% 
-  ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + 
-  geom_point() + geom_line() +
+  summarize (mean_dv = mean(data_value, na.rm = TRUE)) %>% 
+filter(response == "Excellent") %>% 
+select (-response) %>% 
+arrange(year, locationabbr)
+
+brfss_smart2010_2
+```
+
+    ## # A tibble: 443 x 3
+    ## # Groups:   year, locationabbr [443]
+    ##     year locationabbr mean_dv
+    ##    <int> <chr>          <dbl>
+    ##  1  2002 AK              33.7
+    ##  2  2002 AL              30.9
+    ##  3  2002 AR              29.3
+    ##  4  2002 AZ              33.4
+    ##  5  2002 CA              29.8
+    ##  6  2002 CO              32.5
+    ##  7  2002 CT              33.8
+    ##  8  2002 DC              31.8
+    ##  9  2002 DE              34.2
+    ## 10  2002 FL              31.1
+    ## # ... with 433 more rows
+
+``` r
+brfss_smart2010_2 %>% 
+  ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + geom_point() + geom_line() +
   labs(title = "Mean data value over time, by state", 
     x = "year", 
     y = "data value")
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+The mean data values across states range from 26 to 42.7. The meadian
+values by year are: 2002: 34, 2004: 34.4166667, 2006: 34.9, 2008:
+35.1383333, and 2010: 34.89.
 
   - Make a two-panel plot showing, for the years 2006, and 2010,
     distribution of data\_value for responses (“Poor” to “Excellent”)
-    among locations in NY State.
+    among locations in NY State. Problem 3
 
 <!-- end list -->
 
@@ -191,7 +247,6 @@ brfss_smart2010_1 %>%
 brfss_smart2010_1 %>% 
   filter(locationabbr == "NY", 
          year == 2006 | year == 2010) %>% 
-  select (year, locationabbr, locationdesc, response, data_value) %>% 
 ggplot(aes(x = response, y = data_value)) + 
   geom_boxplot() + facet_grid(. ~ year)  +
   labs(title = "Distribution of data values by repsonse level, NY", 
@@ -199,12 +254,14 @@ ggplot(aes(x = response, y = data_value)) +
     y = "data value")
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](HW-3_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> In 2006, the
+largest range of values within a category was in `Good`. The smallest
+distrubution was among `Very Good`, which also has the lowest data
+values. In 2010 the highest data values and the largest distributions of
+values was in the `Excellent` group. Again the smallest values and
+smallest distribution was in the `Very Good` group.
 
 ## Problem 3
-
-variables activity.\* are the activity counts for each minute of a
-24-hour day starting at midnight.
 
   - Load, tidy, and otherwise wrangle the data. Your final dataset
     should include all originally observed variables and values; have
@@ -221,7 +278,7 @@ accel =
   mutate(day = factor(day, labels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),
          weekend = as.numeric(if_else(day == "Saturday" | day == "Sunday", "1", "0"))) %>% 
   select (week, day_id, day, weekend, everything()) %>% 
-arrange (week, day)
+  arrange (week, day)
 ```
 
     ## Parsed with column specification:
@@ -243,75 +300,13 @@ represented in our data set with varaibles `acitvity_1` through
     minutes to create a total activity variable for each day, and create
     a table showing these totals. Are any trends apparent?
 
-<!-- end list -->
+accel %\>% group\_by(day\_id) %\>% mutate (daily\_tot =
+aggregate(activity\_1:activity\_1440)) %\>% select (week, day\_id, day,
+weekend, daily\_tot, everything()) \#sums not right.
 
-``` r
-accel %>% 
-  group_by(day_id) %>% 
-  mutate (daily_tot = sum(activity_1 : activity_1440)) %>% 
-  select (week, day_id, day, weekend, daily_tot, everything())
-```
-
-    ## # A tibble: 35 x 1,445
-    ## # Groups:   day_id [35]
-    ##     week day_id day   weekend daily_tot activity_1 activity_2 activity_3
-    ##    <dbl>  <dbl> <fct>   <dbl>     <dbl>      <dbl>      <dbl>      <dbl>
-    ##  1     1      1 Mond~       0     3949.       88.4       82.2       64.4
-    ##  2     1      2 Tues~       0     2278         1          1          1  
-    ##  3     1      3 Wedn~       0        1         1          1          1  
-    ##  4     1      4 Thur~       0    46665         1          1          1  
-    ##  5     1      5 Frid~       0      941.       47.4       48.8       46.9
-    ##  6     1      6 Satu~       1     3166.       64.8       59.5       73.7
-    ##  7     1      7 Sund~       1     1126.       71.1      103.        68.5
-    ##  8     2      8 Mond~       0   228150       675        542       1010  
-    ##  9     2      9 Tues~       0    42486       291        335        393  
-    ## 10     2     10 Wedn~       0     1849        64         11          1  
-    ## # ... with 25 more rows, and 1,437 more variables: activity_4 <dbl>,
-    ## #   activity_5 <dbl>, activity_6 <dbl>, activity_7 <dbl>,
-    ## #   activity_8 <dbl>, activity_9 <dbl>, activity_10 <dbl>,
-    ## #   activity_11 <dbl>, activity_12 <dbl>, activity_13 <dbl>,
-    ## #   activity_14 <dbl>, activity_15 <dbl>, activity_16 <dbl>,
-    ## #   activity_17 <dbl>, activity_18 <dbl>, activity_19 <dbl>,
-    ## #   activity_20 <dbl>, activity_21 <dbl>, activity_22 <dbl>,
-    ## #   activity_23 <dbl>, activity_24 <dbl>, activity_25 <dbl>,
-    ## #   activity_26 <dbl>, activity_27 <dbl>, activity_28 <dbl>,
-    ## #   activity_29 <dbl>, activity_30 <dbl>, activity_31 <dbl>,
-    ## #   activity_32 <dbl>, activity_33 <dbl>, activity_34 <dbl>,
-    ## #   activity_35 <dbl>, activity_36 <dbl>, activity_37 <dbl>,
-    ## #   activity_38 <dbl>, activity_39 <dbl>, activity_40 <dbl>,
-    ## #   activity_41 <dbl>, activity_42 <dbl>, activity_43 <dbl>,
-    ## #   activity_44 <dbl>, activity_45 <dbl>, activity_46 <dbl>,
-    ## #   activity_47 <dbl>, activity_48 <dbl>, activity_49 <dbl>,
-    ## #   activity_50 <dbl>, activity_51 <dbl>, activity_52 <dbl>,
-    ## #   activity_53 <dbl>, activity_54 <dbl>, activity_55 <dbl>,
-    ## #   activity_56 <dbl>, activity_57 <dbl>, activity_58 <dbl>,
-    ## #   activity_59 <dbl>, activity_60 <dbl>, activity_61 <dbl>,
-    ## #   activity_62 <dbl>, activity_63 <dbl>, activity_64 <dbl>,
-    ## #   activity_65 <dbl>, activity_66 <dbl>, activity_67 <dbl>,
-    ## #   activity_68 <dbl>, activity_69 <dbl>, activity_70 <dbl>,
-    ## #   activity_71 <dbl>, activity_72 <dbl>, activity_73 <dbl>,
-    ## #   activity_74 <dbl>, activity_75 <dbl>, activity_76 <dbl>,
-    ## #   activity_77 <dbl>, activity_78 <dbl>, activity_79 <dbl>,
-    ## #   activity_80 <dbl>, activity_81 <dbl>, activity_82 <dbl>,
-    ## #   activity_83 <dbl>, activity_84 <dbl>, activity_85 <dbl>,
-    ## #   activity_86 <dbl>, activity_87 <dbl>, activity_88 <dbl>,
-    ## #   activity_89 <dbl>, activity_90 <dbl>, activity_91 <dbl>,
-    ## #   activity_92 <dbl>, activity_93 <dbl>, activity_94 <dbl>,
-    ## #   activity_95 <dbl>, activity_96 <dbl>, activity_97 <dbl>,
-    ## #   activity_98 <dbl>, activity_99 <dbl>, activity_100 <dbl>,
-    ## #   activity_101 <dbl>, activity_102 <dbl>, activity_103 <dbl>, ...
-
-``` r
-#sums not right.
-
-accel %>% 
-  group_by(day_id) %>% 
-  mutate (daily_tot = sum(activity_1:activity_1440)) %>%  
-  ggplot(aes(x=day_id, y=daily_tot)) + 
-  geom_point()
-```
-
-![](HW-3_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+accel %\>% group\_by(day\_id) %\>% mutate (daily\_tot =
+sum(activity\_1:activity\_1440)) %\>%  
+ggplot(aes(x=day\_id, y=daily\_tot)) + geom\_point()
 
   - Accelerometer data allows the inspection activity over the course of
     the day. Make a single-panel plot that shows the 24-hour activity

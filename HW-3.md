@@ -58,7 +58,7 @@ instacart %>%
     geom_point() +
     labs(title = "Number of items ordered per aisle", 
     x = "Aisle Number", 
-    y = "NUmber items ordered")
+    y = "Nmber items ordered")
 ```
 
 ![](HW-3_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
@@ -231,7 +231,7 @@ brfss_smart2010_2 %>%
     y = "data value")
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](HW-3_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 The mean data values across states range from 26 to 42.7. The meadian
 values by year are: 2002: 34, 2004: 34.4166667, 2006: 34.9, 2008:
@@ -239,7 +239,7 @@ values by year are: 2002: 34, 2004: 34.4166667, 2006: 34.9, 2008:
 
   - Make a two-panel plot showing, for the years 2006, and 2010,
     distribution of data\_value for responses (“Poor” to “Excellent”)
-    among locations in NY State. Problem 3
+    among locations in NY State.
 
 <!-- end list -->
 
@@ -247,14 +247,14 @@ values by year are: 2002: 34, 2004: 34.4166667, 2006: 34.9, 2008:
 brfss_smart2010_1 %>% 
   filter(locationabbr == "NY", 
          year == 2006 | year == 2010) %>% 
-ggplot(aes(x = response, y = data_value)) + 
+ggplot(aes(x = response, y = data_value, color = response)) + 
   geom_boxplot() + facet_grid(. ~ year)  +
   labs(title = "Distribution of data values by repsonse level, NY", 
     x = "response", 
     y = "data value")
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> In 2006, the
+![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> In 2006, the
 largest range of values within a category was in `Good`. The smallest
 distrubution was among `Very Good`, which also has the lowest data
 values. In 2010 the highest data values and the largest distributions of
@@ -300,13 +300,67 @@ represented in our data set with varaibles `acitvity_1` through
     minutes to create a total activity variable for each day, and create
     a table showing these totals. Are any trends apparent?
 
-accel %\>% group\_by(day\_id) %\>% mutate (daily\_tot =
-aggregate(activity\_1:activity\_1440)) %\>% select (week, day\_id, day,
-weekend, daily\_tot, everything()) \#sums not right.
+<!-- end list -->
 
-accel %\>% group\_by(day\_id) %\>% mutate (daily\_tot =
-sum(activity\_1:activity\_1440)) %\>%  
-ggplot(aes(x=day\_id, y=daily\_tot)) + geom\_point()
+``` r
+accel_2 =
+  accel %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    values_to = "activity") %>% 
+  group_by(week, day_id, day, weekend) %>% 
+  summarize(daily_tot = sum(activity))
+knitr::kable(accel_2)
+```
+
+| week | day\_id | day       | weekend | daily\_tot |
+| ---: | ------: | :-------- | ------: | ---------: |
+|    1 |       1 | Monday    |       0 |  480542.62 |
+|    1 |       2 | Tuesday   |       0 |   78828.07 |
+|    1 |       3 | Wednesday |       0 |  376254.00 |
+|    1 |       4 | Thursday  |       0 |  631105.00 |
+|    1 |       5 | Friday    |       0 |  355923.64 |
+|    1 |       6 | Saturday  |       1 |  307094.24 |
+|    1 |       7 | Sunday    |       1 |  340115.01 |
+|    2 |       8 | Monday    |       0 |  568839.00 |
+|    2 |       9 | Tuesday   |       0 |  295431.00 |
+|    2 |      10 | Wednesday |       0 |  607175.00 |
+|    2 |      11 | Thursday  |       0 |  422018.00 |
+|    2 |      12 | Friday    |       0 |  474048.00 |
+|    2 |      13 | Saturday  |       1 |  423245.00 |
+|    2 |      14 | Sunday    |       1 |  440962.00 |
+|    3 |      15 | Monday    |       0 |  467420.00 |
+|    3 |      16 | Tuesday   |       0 |  685910.00 |
+|    3 |      17 | Wednesday |       0 |  382928.00 |
+|    3 |      18 | Thursday  |       0 |  467052.00 |
+|    3 |      19 | Friday    |       0 |  371230.00 |
+|    3 |      20 | Saturday  |       1 |  381507.00 |
+|    3 |      21 | Sunday    |       1 |  468869.00 |
+|    4 |      22 | Monday    |       0 |  154049.00 |
+|    4 |      23 | Tuesday   |       0 |  409450.00 |
+|    4 |      24 | Wednesday |       0 |    1440.00 |
+|    4 |      25 | Thursday  |       0 |  260617.00 |
+|    4 |      26 | Friday    |       0 |  340291.00 |
+|    4 |      27 | Saturday  |       1 |  319568.00 |
+|    4 |      28 | Sunday    |       1 |  434460.00 |
+|    5 |      29 | Monday    |       0 |  620860.00 |
+|    5 |      30 | Tuesday   |       0 |  389080.00 |
+|    5 |      31 | Wednesday |       0 |    1440.00 |
+|    5 |      32 | Thursday  |       0 |  138421.00 |
+|    5 |      33 | Friday    |       0 |  549658.00 |
+|    5 |      34 | Saturday  |       1 |  367824.00 |
+|    5 |      35 | Sunday    |       1 |  445366.00 |
+
+This data show the mean activity per day: Monday - 4.583421210^{5},
+Tuesday - 3.717398110^{5}, Wednesday - 2.73847410^{5}, Thursday -
+3.83842610^{5}, Friday - 4.182301310^{5}, Saturday - 3.598476510^{5},
+and Sunday - 4.25954410^{5}. This indicates that Mondays are the most
+active day of the week.
+
+The mean weekday value is 3.812004110^{5} and mean weekend value is
+3.929010310^{5}, showing that weekends are slightly more active than
+weekdays.
 
   - Accelerometer data allows the inspection activity over the course of
     the day. Make a single-panel plot that shows the 24-hour activity
@@ -317,16 +371,24 @@ ggplot(aes(x=day\_id, y=daily\_tot)) + geom\_point()
 <!-- end list -->
 
 ``` r
-accel %>% 
+accel_plot = 
+  accel %>% 
   pivot_longer(
     activity_1:activity_1440,
     names_to = "minute",
-    values_to = "activity_unit") %>% 
-ggplot(aes(x=day_id, y=activity_unit, group = minute, color = day)) + 
+    values_to = "activity") %>% 
+ggplot(aes(x=day_id, y=activity, group = minute, color = day)) + 
   geom_point() + geom_line() +
-  labs(title = "Activity over time", 
+  labs(title = "24 hour activity over 5 weeks", 
     x = "day", 
     y = "activity unit")
+accel_plot
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](HW-3_files/figure-gfm/unnamed-chunk-11-1.png)<!-- --> This chart
+appears to show that activity spikes in the middle of the day, as is to
+be expected given typical sleep schedules. This person appears to be
+slightly more active over the weekends, but they appeared to have one
+very active weekend that may be skewing the results. Similarly this
+person had one very inactive Friday-Saturday that seem like outliers
+among their typical activity pattern.

@@ -42,7 +42,7 @@ instacart %>%
     geom_point() +
     labs(title = "Number of items ordered per aisle", 
     x = "Aisle Number", 
-    y = "NUmber items ordered")
+    y = "Nmber items ordered")
 ```
 
 *   Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
@@ -123,9 +123,7 @@ select (-response) %>%
 arrange(year, locationabbr)
 
 brfss_smart2010_2
-```
 
-```{r}
 brfss_smart2010_2 %>% 
   ggplot(aes(x=year, y=mean_dv, group = locationabbr, color = locationabbr)) + geom_point() + geom_line() +
   labs(title = "Mean data value over time, by state", 
@@ -136,13 +134,13 @@ brfss_smart2010_2 %>%
 The mean data values across states range from `r min(pull(brfss_smart2010_2,mean_dv))` to `r max(pull(brfss_smart2010_2,mean_dv))`. The meadian values by year are: 2002: `r median(pull(filter(brfss_smart2010_2,year==2002),mean_dv))`, 2004: `r median(pull(filter(brfss_smart2010_2,year==2004),mean_dv))`, 2006: `r median(pull(filter(brfss_smart2010_2,year==2006),mean_dv))`, 2008: `r median(pull(filter(brfss_smart2010_2,year==2008),mean_dv))`, and 2010: `r median(pull(filter(brfss_smart2010_2,year==2010),mean_dv))`.
 
 *   Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
-Problem 3
+
 
 ```{r}
 brfss_smart2010_1 %>% 
   filter(locationabbr == "NY", 
          year == 2006 | year == 2010) %>% 
-ggplot(aes(x = response, y = data_value)) + 
+ggplot(aes(x = response, y = data_value, color = response)) + 
   geom_boxplot() + facet_grid(. ~ year)  +
   labs(title = "Distribution of data values by repsonse level, NY", 
     x = "response", 
@@ -168,32 +166,36 @@ The dataset `accel` has `r nrow(accel)` observations, with `r ncol(accel)` varia
 
 *   Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 
+```{r}
+accel_2 =
+  accel %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    values_to = "activity") %>% 
+  group_by(week, day_id, day, weekend) %>% 
+  summarize(daily_tot = sum(activity))
+knitr::kable(accel_2)
+```
 
-accel %>% 
-  group_by(day_id) %>% 
-  mutate (daily_tot = aggregate(activity_1:activity_1440)) %>% 
-  select (week, day_id, day, weekend, daily_tot, everything())
-#sums not right.
+This data show the mean activity per day: Monday - `r mean(pull(filter(accel_2, day=="Monday"), daily_tot))`, Tuesday - `r mean(pull(filter(accel_2, day=="Tuesday"), daily_tot))`, Wednesday - `r mean(pull(filter(accel_2, day=="Wednesday"), daily_tot))`, Thursday - `r mean(pull(filter(accel_2, day=="Thursday"), daily_tot))`, Friday - `r mean(pull(filter(accel_2, day=="Friday"), daily_tot))`, Saturday - `r mean(pull(filter(accel_2, day=="Saturday"), daily_tot))`, and Sunday - `r mean(pull(filter(accel_2, day=="Sunday"), daily_tot))`. This indicates that Mondays are the most active day of the week.
 
-accel %>% 
-  group_by(day_id) %>% 
-  mutate (daily_tot = sum(activity_1:activity_1440)) %>%  
-  ggplot(aes(x=day_id, y=daily_tot)) + 
-  geom_point()
-
+The mean weekday value is `r mean(pull(filter(accel_2, weekend==0), daily_tot))` and mean weekend value is `r mean(pull(filter(accel_2, weekend==1), daily_tot))`, showing that weekends are slightly more active than weekdays.
 
 *   Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
 
 ```{r}
-accel %>% 
+accel_plot = 
+  accel %>% 
   pivot_longer(
     activity_1:activity_1440,
     names_to = "minute",
-    values_to = "activity_unit") %>% 
-ggplot(aes(x=day_id, y=activity_unit, group = minute, color = day)) + 
+    values_to = "activity") %>% 
+ggplot(aes(x=day_id, y=activity, group = minute, color = day)) + 
   geom_point() + geom_line() +
-  labs(title = "Activity over time", 
+  labs(title = "24 hour activity over 5 weeks", 
     x = "day", 
     y = "activity unit")
+accel_plot
 ```
- 
+ This chart appears to show that activity spikes in the middle of the day, as is to be expected given typical sleep schedules. This person appears to be slightly more active over the weekends, but they appeared to have one very active weekend that may be skewing the results. Similarly this person had one very inactive Friday-Saturday that seem like outliers among their typical activity pattern.

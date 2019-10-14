@@ -8,7 +8,7 @@ Sam Loewen
 The dataset `instacart` has 1384617 observations, with 15 variables. The
 data tracks products and thier corresponding order, providing
 information like `order_number`, `product_name`, and its corresponding
-`aisle`. We can learn things like the preportion of products that were
+`aisle`. We can learn things like the proportion of products that were
 reordered (0.5985944) or the average number of days since prior order
 (17.0661259).
 
@@ -254,12 +254,13 @@ ggplot(aes(x = response, y = data_value, color = response)) +
     y = "data value")
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> In 2006, the
-largest range of values within a category was in `Good`. The smallest
-distrubution was among `Very Good`, which also has the lowest data
-values. In 2010 the highest data values and the largest distributions of
-values was in the `Excellent` group. Again the smallest values and
-smallest distribution was in the `Very Good` group.
+![](HW-3_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+In 2006, the largest range of values within a category was in `Good`.
+The smallest distrubution was among `Very Good`, which also has the
+lowest data values. In 2010 the highest data values and the largest
+distributions of values was in the `Excellent` group. Again the smallest
+values and smallest distribution was in the `Very Good` group.
 
 ## Problem 3
 
@@ -385,10 +386,11 @@ ggplot(aes(x=day_id, y=activity, group = minute, color = day)) +
 accel_plot
 ```
 
-![](HW-3_files/figure-gfm/unnamed-chunk-11-1.png)<!-- --> This chart
-appears to show that activity spikes in the middle of the day, as is to
-be expected given typical sleep schedules. This person appears to be
-slightly more active over the weekends, but they appeared to have one
-very active weekend that may be skewing the results. Similarly this
-person had one very inactive Friday-Saturday that seem like outliers
-among their typical activity pattern.
+![](HW-3_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+This chart appears to show that activity spikes in the middle of the
+day, as is to be expected given typical sleep schedules. This person
+appears to be slightly more active over the weekends, but they appeared
+to have one very active weekend that may be skewing the results.
+Similarly this person had one very inactive Friday-Saturday that seems
+like an outlier among their typical activity pattern.

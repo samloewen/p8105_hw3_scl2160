@@ -17,7 +17,7 @@ data("brfss_smart2010")
 ```
 ## Problem 1
 
-The dataset `instacart` has `r nrow(instacart)` observations, with `r ncol(instacart)` variables. The data tracks products and thier corresponding order, providing information like `order_number`, `product_name`, and its corresponding `aisle`. We can learn things like the preportion of products that were reordered (`r mean(pull(instacart, reordered))`) or the average number of days since prior order (`r mean(pull(instacart, days_since_prior_order))`).
+The dataset `instacart` has `r nrow(instacart)` observations, with `r ncol(instacart)` variables. The data tracks products and thier corresponding order, providing information like `order_number`, `product_name`, and its corresponding `aisle`. We can learn things like the proportion of products that were reordered (`r mean(pull(instacart, reordered))`) or the average number of days since prior order (`r mean(pull(instacart, days_since_prior_order))`).
 
 
 *   How many aisles are there, and which aisles are the most items ordered from?
@@ -131,7 +131,7 @@ brfss_smart2010_2 %>%
     y = "data value")
 ```
 
-The mean data values across states range from `r min(pull(brfss_smart2010_2,mean_dv))` to `r max(pull(brfss_smart2010_2,mean_dv))`. The meadian values by year are: 2002: `r median(pull(filter(brfss_smart2010_2,year==2002),mean_dv))`, 2004: `r median(pull(filter(brfss_smart2010_2,year==2004),mean_dv))`, 2006: `r median(pull(filter(brfss_smart2010_2,year==2006),mean_dv))`, 2008: `r median(pull(filter(brfss_smart2010_2,year==2008),mean_dv))`, and 2010: `r median(pull(filter(brfss_smart2010_2,year==2010),mean_dv))`.
+The mean data values across states range from `r min(pull(brfss_smart2010_2,mean_dv))` to `r max(pull(brfss_smart2010_2,mean_dv))`. The meadian values by year are: 2002: `r median(pull(filter(brfss_smart2010_2,year==2002),mean_dv))`, 2004: `r median(pull(filter(brfss_smart2010_2,year==2004),mean_dv))`, 2006: `r median(pull(filter(brfss_smart2010_2,year==2006),mean_dv))`, 2008: `r median(pull(filter(brfss_smart2010_2,year==2008),mean_dv))`, and 2010: `r median(pull(filter(brfss_smart2010_2,year==2010),mean_dv))`. 
 
 *   Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
@@ -146,6 +146,7 @@ ggplot(aes(x = response, y = data_value, color = response)) +
     x = "response", 
     y = "data value")
 ```
+
 In 2006, the largest range of values within a category was in `Good`. The smallest distrubution was among `Very Good`, which also has the lowest data values. In 2010 the highest data values and the largest distributions of values was in the `Excellent` group. Again the smallest values and smallest distribution was in the `Very Good` group.
 
 ## Problem 3
@@ -198,4 +199,5 @@ ggplot(aes(x=day_id, y=activity, group = minute, color = day)) +
     y = "activity unit")
 accel_plot
 ```
- This chart appears to show that activity spikes in the middle of the day, as is to be expected given typical sleep schedules. This person appears to be slightly more active over the weekends, but they appeared to have one very active weekend that may be skewing the results. Similarly this person had one very inactive Friday-Saturday that seem like outliers among their typical activity pattern.
+
+ This chart appears to show that activity spikes in the middle of the day, as is to be expected given typical sleep schedules. This person appears to be slightly more active over the weekends, but they appeared to have one very active weekend that may be skewing the results. Similarly this person had one very inactive Friday-Saturday that seems like an outlier among their typical activity pattern.
